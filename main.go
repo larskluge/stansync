@@ -43,6 +43,35 @@ func main() {
 		dSeq = 0
 	}
 	fmt.Println("last dst seq", dSeq)
+
+	if sSeq > dSeq {
+		var n uint64
+		done := make(chan bool)
+		var sub stan.Subscription
+
+		go func() {
+			for {
+				time.Sleep(1 * time.Second)
+				fmt.Printf("%d/%d\n", n, sSeq)
+			}
+		}()
+
+		sub, err = sSc.Subscribe(sChannel, func(m *stan.Msg) {
+			n = m.Sequence
+
+			dSc.PublishAsync(dChannel, m.Data, func(guid string, err error) {
+				check(err)
+			})
+
+			if m.Sequence >= sSeq {
+				sub.Unsubscribe()
+				close(done)
+			}
+		}, stan.StartAtSequence(dSeq+1))
+		check(err)
+
+		<-done
+	}
 }
 
 func check(err error) {
