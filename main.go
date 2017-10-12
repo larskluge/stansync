@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	stan "github.com/nats-io/go-nats-streaming"
 )
 
@@ -37,12 +38,12 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("Src: %v", err))
 	}
-	fmt.Println("last src seq", sSeq)
 	dSeq, err := lastSeq(dSc, dChannel)
 	if err != nil {
 		dSeq = 0
 	}
-	fmt.Println("last dst seq", dSeq)
+	diff := sSeq - dSeq
+	fmt.Printf("last seq src=%s dst=%s diff=%s\n", humanize.Comma(int64(sSeq)), humanize.Comma(int64(dSeq)), humanize.Comma(int64(diff)))
 
 	if sSeq > dSeq {
 		var n uint64
@@ -52,7 +53,7 @@ func main() {
 		go func() {
 			for {
 				time.Sleep(1 * time.Second)
-				fmt.Printf("%d/%d\n", n, sSeq)
+				fmt.Printf("%s/%s\n", humanize.Comma(int64(n)), humanize.Comma(int64(sSeq)))
 			}
 		}()
 
