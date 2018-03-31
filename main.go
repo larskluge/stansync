@@ -106,13 +106,13 @@ func lastSeq(sc stan.Conn, channel string) (n uint64, err error) {
 	var sub stan.Subscription
 	sub, err = sc.Subscribe(channel, func(m *stan.Msg) {
 		n = m.Sequence
-		sub.Unsubscribe()
 		close(done)
 	}, stan.StartWithLastReceived())
 	check(err)
 
 	select {
 	case <-done:
+		sub.Unsubscribe()
 	case <-time.After(1 * time.Second):
 		err = errors.New("Timeout: Could not detect sequence range")
 	}
