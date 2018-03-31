@@ -36,7 +36,7 @@ func main() {
 	defer sSc.Close()
 
 	dUrl, dCluster, dChannel := parseNatsUrl(*dstFlag)
-	dSc, err := stan.Connect(dCluster, clientID, stan.NatsURL(dUrl))
+	dSc, err := stan.Connect(dCluster, clientID, stan.NatsURL(dUrl), stan.ConnectWait(10*time.Second))
 	check(err)
 	defer dSc.Close()
 
