@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -13,7 +14,7 @@ import (
 )
 
 const (
-	clientID = "stansync"
+	clientIdPrefix = "stansync-"
 )
 
 var (
@@ -23,6 +24,11 @@ var (
 
 func main() {
 	flag.Parse()
+
+	h := sha256.New()
+	h.Write([]byte(*dstFlag))
+	sum := h.Sum(nil)
+	clientID := fmt.Sprintf("%s%x", clientIdPrefix, sum)
 
 	sUrl, sCluster, sChannel := parseNatsUrl(*srcFlag)
 	sSc, err := stan.Connect(sCluster, clientID, stan.NatsURL(sUrl))
